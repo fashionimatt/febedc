@@ -1,0 +1,288 @@
+package com.bit.day18;
+
+// 새로 만들기, 열기, 저장, 끝내기
+// 메모장 정보
+
+import java.awt.CheckboxMenuItem;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.Label;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+class MyEvent implements MouseListener, WindowListener{
+	public void windowOpened(WindowEvent e) {}
+	public void windowClosing(WindowEvent e) {}
+	public void windowClosed(WindowEvent e) {}
+	public void windowIconified(WindowEvent e) {}
+	public void windowDeiconified(WindowEvent e) {}
+	public void windowActivated(WindowEvent e) {}
+	public void windowDeactivated(WindowEvent e) {}
+	public void mouseClicked(MouseEvent e) {}
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
+}
+
+public class Ex13 extends Frame {
+	
+	final TextArea ta = new TextArea(" ",15,20,0);
+	JDialog di = new JDialog(this, "메모장 정보");
+
+	public Ex13() {
+		final FileDialog fd1 = new FileDialog(this, "열기", FileDialog.LOAD);
+		final FileDialog fd2 = new FileDialog(this, "저장", FileDialog.SAVE);
+		
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				dispose();
+			}
+		});
+		
+		///////////////////전체 메뉴 구성///////////////////
+
+		Menu[] mns = new Menu[5];
+		String[] msg = {"파일(F)", "편집(E)", "서식(O)", "보기(V)", "도움말"};
+		for(int i=0; i<mns.length; i++){
+			mns[i] = new Menu(msg[i]);
+		}
+		
+		MenuBar mb = new MenuBar();
+		for(int i=0; i<mns.length; i++){
+			mb.add(mns[i]);
+		}
+		
+		/////////////////////////////////////////////////
+		
+		String[][] filemi = {{"새로 만들기(N) Ctrl+N","새 창(W) Ctrl+Shift+N", 
+			"열기(O)... Ctrl+O", "저장(S) Ctrl+S", "다른 이름으로 저장(A) Ctrl+Shift+S"},
+			{"페이지 설정(U)...", "인쇄(P)... Ctrl+P"},
+			{"끝내기(X)"}};
+		MenuItem[][] file = new MenuItem[filemi.length][];
+		for(int i=0; i<filemi.length; i++){
+			file[i] = new MenuItem [filemi[i].length];
+			for(int j=0; j<filemi[i].length; j++){
+				if(filemi[i][j]==null){
+					file[i][j]=null;
+				}else{
+					file[i][j]=new MenuItem(filemi[i][j]);
+				}
+			}
+		}
+		
+		file[0][2].addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fd1.setVisible(true);
+				String path = fd1.getDirectory() + fd1.getFile();
+				byte[] buff = new byte[5];
+				File f = new File(path);
+				InputStream is = null;
+				ArrayList<Byte> list = new ArrayList<>();				
+				try {
+					is = new FileInputStream(f);
+				///////여길 좀 더 보자////////
+					while(true){
+						int su = is.read();
+						if(su==-1){break;}
+						list.add((byte)su);	
+					}
+					is.close();
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				Object[] arr1 = list.toArray();
+				byte[] arr2 = new byte[arr1.length];
+				for(int i=0; i<arr1.length; i++){
+					arr2[i] = (Byte)arr1[i];
+				}
+				String content = new String(arr2);
+				ta.setText(content);
+				/////////여기까지//////////////
+			}
+		});
+		
+		file[0][3].addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				fd2.setVisible(true);
+				String path = fd2.getDirectory() + fd2.getFile();
+				File f = new File(path);
+				OutputStream os;
+				try {
+					f.createNewFile();
+					os = new FileOutputStream(f);
+					String content = ta.getText();
+					byte[] by = content.getBytes();
+					os.write(by);
+					os.close();
+				} catch (FileNotFoundException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
+			}
+		});
+		
+		for(int i=0; i<file.length; i++){
+			for(int j=0; j<file[i].length; j++){
+				mns[0].add(file[i][j]);
+			}
+			if(i==file.length-1){break;}
+			else{mns[0].addSeparator();}
+		}
+		
+		file[0][0].addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ta.setText("");
+			}
+		});
+		
+		file[2][0].addActionListener(new ActionListener() {			
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		
+		/////////////////////////////////////////////////
+		
+		String[][] editmi = {{"실행 취소(U) Ctrl+Z"},
+				{"잘라내기(T) Ctrl+X","복사(C) Ctrl+C","붙여넣기(V) Ctrl+V", "삭제(L) Del"}, 
+				{"Bing으로 검색(S) Ctrl+E", "찾기(F)... Ctrl+F",
+				"다음 찾기(N) F3","이전 찾기(V) Shitft+F3","바꾸기(R)... Ctrl+H", "이동(G)... Ctrl+G"},
+			{"모두 선택(A) Ctrl+A", "시간/날짜(D) F5"}};
+		MenuItem[][] edit = new MenuItem[editmi.length][];
+		for(int i=0; i<editmi.length; i++){
+			edit[i] = new MenuItem [editmi[i].length];
+			for(int j=0; j<editmi[i].length; j++){
+				if(editmi[i][j]==null){
+					edit[i][j]=null;
+				}else{
+					edit[i][j]=new MenuItem(editmi[i][j]);
+				}
+			}
+		}
+		for(int i=0; i<edit.length; i++){
+			for(int j=0; j<edit[i].length; j++){
+				mns[1].add(edit[i][j]);
+			}
+			if(i==edit.length-1){break;}
+			else{mns[1].addSeparator();}
+		}
+		/////////////////////////////////////////////////////////////////////
+		
+		MenuItem form1 = new MenuItem("자동 줄 바꿈(W)");
+		MenuItem form2 = new MenuItem("글꼴(F)...");
+		mns[2].add(form1);
+		mns[2].add(form2);
+		
+		/////////////////////////////////////////////////////////////////////
+		
+		Menu viewmi1 = new Menu("확대하기/축소하기");
+		MenuItem viewmi1_1 = new MenuItem("확대(I)                                                  Ctrl+더하기");
+		MenuItem viewmi1_2 = new MenuItem("축소(O)                                                    Ctrl+빼기");
+		MenuItem viewmi1_3 = new MenuItem("확대하기/축소하기 기본값 복원                Ctrl+O");
+		viewmi1.add(viewmi1_1);
+		viewmi1.add(viewmi1_2);
+		viewmi1.add(viewmi1_3);
+		
+		MenuItem viewmi2 = new CheckboxMenuItem("상태 표시줄(S)");
+		mns[3].add(viewmi1);
+		mns[3].add(viewmi2);
+		
+		////////////////////////////////////////////////////////////////////////
+
+		MenuItem[] help = new MenuItem[3];
+		String[] helpmi = {"도움말 보기(H)", "피드백 보내기(F)", "메모장 정보(A)"};
+		for(int i=0; i<help.length; i++){
+			help[i] = new MenuItem(helpmi[i]);
+			mns[4].add(help[i]);
+			if(i==1){
+				mns[4].addSeparator();
+			}
+		}
+		
+		help[2].addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPanel p = new JPanel();
+				di.setLayout(null);
+				di.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						di.dispose();
+					}
+				});
+				ImageIcon img = new ImageIcon("C:\\Java\\febedc\\Day17\\imgs\\pp.png");
+				JLabel jlb = new JLabel(img);
+				jlb.setSize(180, 180);
+				jlb.setLocation(0, 0);
+				p.add(jlb);
+				p.setSize(100, 190);
+				p.setLocation(200,10);
+				di.add(p);
+				
+				Label lb = new Label("Pinkroft Winpows");
+				lb.setSize(100, 30);
+				lb.setLocation(25,220);
+				di.add(lb);
+				Label lb2 = new Label("Version 2019(OS Build 18362.318)");
+				lb2.setSize(350,30);
+				lb2.setLocation(25,240);
+				di.add(lb2);
+				Label lb3 = new Label("ⓒ2019 Pinkroft Corporation. All rights not reserved.");
+				lb3.setSize(450,35);
+				lb3.setLocation(25,260);
+				di.add(lb3);
+				Label lb4 = new Label("by. Harry M. You");
+				lb4.setSize(200,40);
+				lb4.setLocation(25,280);
+				di.add(lb4);
+				
+				di.setBounds(230,230,500,400);
+				di.setVisible(true);
+			}
+		});
+		
+		
+		
+		
+		///////////////////////////////////////////////////////////////////////////////
+		
+		add(ta);
+		setMenuBar(mb);
+		setTitle("제목 없음 - Windows 메모장");
+		setBounds(200,200,600,600);
+		setVisible(true);
+		
+	}
+
+	public static void main(String[] args) {
+		new Ex13();
+	}
+
+}
