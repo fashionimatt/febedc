@@ -1,0 +1,175 @@
+package com.bit.day21;
+
+import java.awt.BorderLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Label;
+import java.awt.Panel;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.Random;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+
+//
+public class Ex16_1 extends Frame implements Runnable{
+//	패널 및 버튼배열 객체 생성
+//		-> mix 메소드와 생성자에서 모두 사용하기 위해 이 둘은 필드에 배치
+	Panel p1 = new Panel();
+	JButton[] jbtn = new JButton[16];
+//	점수 계산을 위한 변수 cnt 선언&초기화
+	int cnt = 0;
+//	게임이 플레이 될 총 시간 설정을 위한 변수 limit 선언&초기화
+	int limit = 10;
+	JLabel lb2 = new JLabel(limit + "초 " + cnt + "점");
+
+	public Ex16_1() {
+// 패널 및 버튼배열 객체 생성
+		Panel p2 = new Panel();
+		
+//	'X'버튼 누를 시 종료되도록!
+		addWindowListener(new WindowListener() {
+			public void windowOpened(WindowEvent e) {}			
+			public void windowIconified(WindowEvent e) {}			
+			public void windowDeiconified(WindowEvent e) {}			
+			public void windowDeactivated(WindowEvent e) {}			
+			public void windowClosing(WindowEvent e) {dispose();}
+			public void windowClosed(WindowEvent e) {}		
+			public void windowActivated(WindowEvent e) {}
+		});
+		
+//	p1 패널을 4X4 GridLayout으로 배치구조 형성
+		p1.setLayout(new GridLayout(4,4));
+//	이미지 삽입을 위한 Toolkit 객체 생성
+		Toolkit kit = Toolkit.getDefaultToolkit();
+//	img 파일들의 이름을 보관하는 문자열 배열 imgNms 생성
+		String[] imgNms = {"11.png", "12.png", "13.png", "14.png"};
+//	버튼 생성 및 이미지 부착을 위한 for문 생성	
+		for(int i=0; i<jbtn.length; i++){
+//	Toolkit을 이용한 img 호출. imgNms[i/4]는 16칸에 이미지가 고르게 들어가기 위한 식.
+			Image img = kit.getImage(imgNms[i/4]);
+//	아이콘 객체에 이미지 삽입
+			Icon icon = new ImageIcon(img);
+//	버튼에 이미지 삽입된 아이콘 부착시켜 생성
+			JButton btn = new JButton(icon);
+//	"11.png"에 대한 이벤트 생성
+			if(i/4==0){
+				btn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						System.out.println("마이크...");
+						cnt++;
+					}
+				});
+			}
+//	jbtn 배열에 생성된 버튼 넣기
+			jbtn[i]=btn;
+//	게임 시작 전 버튼 클릭 방지를 위한 setEnable(false);
+//		->false로 해두면 아예 클릭 조차 안됨.
+			btn.setEnabled(false);
+//	패널 p1에 버튼 추가
+			p1.add(btn);
+		}
+		
+//	시작,종료 버튼 생성
+		JButton start = new JButton("시작");
+//	Ex16_1클래스 타입의 me라는 참조변수에 Ex16_1 클래스 객체.
+//		-> ActionListner에 넣기 위해 final
+		final Ex16_1 me = this;
+		start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+//	Thread 객체 생성.
+				Thread thr = new Thread(me);
+//	Thread의 run 메소드에 오버라이딩 된 내용(play()) 실행.
+				thr.start();
+			}
+		});
+		JButton end = new JButton("종료");
+//	종료 버튼 클릭 시 종료되도록 dispose 이벤트 추가
+		end.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+//	패널 p2에 start,end 버튼 추가
+		p2.add(start);
+		p2.add(end);
+		
+//	Frame에 라벨 및 패널 p1,p2 추가. BorderLayout의 각 방향에 추가.
+		add(new Label("마이크를 선택하세요"),BorderLayout.NORTH);
+		add(lb2,BorderLayout.SOUTH);
+		add(p1,BorderLayout.CENTER);
+		add(p2,BorderLayout.EAST);
+//	Size 및 Location, Visibility 설정
+		setBounds(200,200,600,600);
+		setVisible(true);
+		
+	}
+	
+//	시작 버튼을 누를 시 게임이 시작되도록 하는 play 메소드 생성
+	public void play(){
+//	setEnable(false)로 되어있는 버튼들을 시작 버튼 클릭 시 활성화 되도록!
+		for(int i=0; i<jbtn.length; i++){
+			jbtn[i].setEnabled(true);
+		}
+//	설정된 시간이 줄어들고 0초가 되면 게임 정지.
+		while(--limit>0){
+//	시작되면 섞고 시작!
+			mix();
+//	섞어진 후에 다시 섞이기 전에 .5초 정도의 시간을 주기 위한 Thread.sleep.
+//		->Thread.sleep은 기본적으로 Interrupt Exception이 
+//			자주 발생하기에 예외처리를 해줘야 함
+			try {
+				Thread.sleep(1000);
+//	JPanel과 같은 컨테이너들은 동적 변화가 생겨도 변화를 재확인시켜주지 않으면
+//	확인이 되지 않는다. 그럴 경우 revalidate를 통해서 재확인되어야 변화된 내용이 화면에
+//	출력이 된다.
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+		}
+//	게임이 끝나면 버튼을 더 이상 클릭하지 못 하도록.
+		for(int i=0; i<jbtn.length; i++){
+			jbtn[i].setEnabled(false);
+		}
+	}
+	
+//	버튼을 섞기 위한 mix 메소드 생성
+	public void mix(){
+//	이미지의 임의 배치를 위한 Random 객체 선언
+		Random random = new Random();
+		for(int i=0; i<1000; i++){
+//	정수형 ran에 16을 넘지 않는 한에서 임의의 숫자 입력
+			int ran = random.nextInt(16);
+			
+//	BubbleSort를 통한 버튼의 임의 배치
+//		-> 임시 버튼 temp에 jbtn[0]을 입력
+			JButton temp = jbtn[0];
+//		-> jbtn[0]에 임의의 jbtn 배열 버튼 입력
+			jbtn[0] = jbtn[ran];
+//		-> 입력한 임의의 jbtn 배열 버튼에 temp 입력
+			jbtn[ran] = temp;
+		}
+//	섞여진 Button들을 다시 패널 p1에 추가. 이렇게 해서 임의 배치 완료.
+		for(int i=0; i<16; i++){
+			p1.add(jbtn[i]);
+		}
+	}
+	
+	public static void main(String[] args) {
+		new Ex16_1();
+	}
+
+//	Runnable 인터페이스의 메소드인 run 오버라이딩. 시작 누르면 play 메소드 동작하도록.
+	public void run() {
+		play();
+	}
+
+}
