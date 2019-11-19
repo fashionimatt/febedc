@@ -1,0 +1,68 @@
+package com.bit.day22.cs03;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class BitServer extends Thread{
+	Socket sock;
+	
+	public void run() {
+//	사용자 메세지 IO를 위한 객체 생성
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+//		IO 연결
+		try {
+			is = sock.getInputStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			while(true){
+				String msg = br.readLine();
+				System.out.println(msg);				
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) {
+//	소켓 생성
+		ServerSocket serve = null;
+		try {
+//	하나의 포트에서는 하나의 어플리케이션만이 점유할 수 있음		
+//		※ 그 포트에 두 개의 어플리케이션이 있으면 서버가 어디에 접속해야하는데?
+//	포트 5000 접속 설정
+			serve = new ServerSocket(5000);
+			while(true){
+//	사용자 서버 접속
+//	필드 영역에 이미 sock 이 있음에도 다시 생성하는 이유는 임계 구역에 빠지지 않기 위해서
+//	각 객체들의 socket을 만들어준 후 여기서 진행된 내용을 필드의 sock으로 전달
+//		※Synchronized를 써도 되지만 성능 하락의 단점이 있음
+				Socket sock = serve.accept();
+//	사용자 IP 출력
+				InetAddress addr = sock.getInetAddress();
+				System.out.println(addr.getHostAddress() + " 님이 접속하셨습니다");
+//	쓰레드 객체 생성
+				BitServer thr = new BitServer();
+				thr.sock = sock;
+//	쓰레드 메소드 시작
+				thr.start();
+			}
+//	예외 처리
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+				try {
+					if(serve!=null)serve.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+	}
+
+}
