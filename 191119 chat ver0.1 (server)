@@ -1,0 +1,46 @@
+package com.bit.day22.cs01;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+
+public class BitServer {
+
+	public static void main(String[] args) {
+		ServerSocket serv = null;
+//	Port는 물리적인 것과 개념적인 것들이 있다.
+//		물리적인 Port = USB Port, KeyBoard, Mouse Port 등등
+//		개념적인 Port = 웹상의 :80 등
+//			-> Port번호는 1~65000 정도까지 존재
+//			-> 2000번 이내 Port 번호는 이미 약속된 주소이므로 사용 자제
+		String msg = "Welcome to Harry's Server...";
+		OutputStream os = null;
+		Socket sock = null;
+		try {
+			serv = new ServerSocket(5000);
+//	PC와 PC간의 연결은 Socket 간의 연결이다.
+			System.out.println("클라이언트 접속 중..");
+			sock = serv.accept();
+			InetAddress addr = sock.getInetAddress();
+			System.out.println(addr.getHostAddress());
+			System.out.println("클라이언트 접속 완료");
+			os = sock.getOutputStream();
+			os.write(msg.getBytes());
+			os.flush();			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {
+				if(os!=null)os.close();
+				if(sock!=null)sock.close();
+				if(serv!=null)serv.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+}
