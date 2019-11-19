@@ -1,0 +1,66 @@
+package com.bit.day22.cs03;
+
+import java.awt.BorderLayout;
+import java.awt.Frame;
+import java.awt.TextArea;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class BitClient extends Frame implements ActionListener{
+	java.awt.TextField tf = null;
+	TextArea ta = null;
+	OutputStream os = null;
+	
+//	이벤트가 발생할때마다 작동되도록 해놨기 때문에 따로 반복문 x
+	public void actionPerformed(ActionEvent e) {
+		String msg = tf.getText() + "\n";
+		try {
+			os.write(msg.getBytes());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public BitClient() {
+		setLayout(new BorderLayout());
+		tf = new java.awt.TextField();
+		
+		tf.addActionListener(this);
+		ta = new TextArea();
+		add(tf,BorderLayout.SOUTH);
+		add(ta,BorderLayout.CENTER);
+		
+		setBounds(100,100,500,500);
+		setVisible(true);
+		
+		String ip = "192.168.1.31";
+		int port = 5000;
+		Socket sock = null;
+		
+		try {
+			sock = new Socket(ip,port);
+			os = sock.getOutputStream();
+			
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(os!=null)os.close();
+				if(sock!=null)sock.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} 
+	}
+
+	public static void main(String[] args) {
+		
+	}
+
+}
