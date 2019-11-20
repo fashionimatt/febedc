@@ -1,0 +1,64 @@
+package chat.client;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class PracticeClient {
+	private Socket sock;
+	private DataInputStream dis;
+	private DataOutputStream dos;
+//	ClientGUI와 연동 위한 변수 생성
+	private ClientGUI gui;
+	private String msg;	
+//	gui 참조변수에 대한 객체를 받아오기 위한 setGui
+	public void setGui(ClientGUI gui) {
+//	필드에 깔린 gui는 매개 인자로 들어오는 gui가 대입될 것임
+		this.gui = gui;
+	}
+
+	public void connect(){
+//	접속할 Ip와 포트번호 입력
+		String ip = "172.30.1.50";
+		int port = 6000;
+		try {
+//	ip와 포트번호에 맞춰서 서버 접속
+			sock = new Socket(ip,port);
+			System.out.println("클라이언트 : 서버 연결에 성공하였습니다");
+			
+//	이 클라이언트 소켓에 대한 입출력 스트림 생성
+			dis = new DataInputStream(sock.getInputStream());
+			dos = new DataOutputStream(sock.getOutputStream());
+			
+//	출력스트림을 통해 문자열 전송
+			dos.writeUTF("안녕하세요 나는 클라이언트입니다 :)\n");
+			System.out.println("클라이언트 : 메세지 전송 완료");
+			
+			while(dis!=null){
+//	msg 문자열에 입력되는 자료를 대입
+				msg = dis.readUTF();
+//	서버측에서 전송된 msg를 클라이언트 ta에 더함
+				gui.appendMsg(msg);
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();			
+		}
+	}
+	
+	public static void main(String[] args) {
+		PracticeClient practiceclient = new PracticeClient();
+		practiceclient.connect();
+	}
+
+	public void sendMessage(String msg2) {
+		try {
+			dos.writeUTF(msg2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
