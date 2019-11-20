@@ -66,9 +66,9 @@ public class PUBTClient extends JFrame implements ActionListener{
 			br = new BufferedReader(isr);
 			
 			while(true){
-				InetAddress addr = sock.getInetAddress();
+				InetAddress addr = InetAddress.getLocalHost();
 				String msg = br.readLine();
-				ta.setText(ta.getText() + "\n" + "[" + addr + "님의 대화]" + msg);
+				ta.setText(ta.getText() + "\n" + "[" + addr + "님의 대화]\n" +  msg);
 			}
 			
 		} catch (UnknownHostException e) {
