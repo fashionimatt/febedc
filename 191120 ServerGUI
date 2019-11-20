@@ -1,0 +1,59 @@
+package chat.server;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class ServerGUI extends JFrame implements ActionListener{
+	
+	private JTextArea jta = new JTextArea(40,25);
+	private JTextField jtf = new JTextField(25);
+	//server 백그라운드와 연동
+	private PracticeServer server = new PracticeServer();
+	
+	public ServerGUI() {
+		
+		add(jta, BorderLayout.CENTER);
+		add(jtf, BorderLayout.SOUTH);
+		jtf.addActionListener(this);
+		
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setBounds(200,100,400,600);
+		setVisible(true);
+		setTitle("Server Part");
+
+		server.setGui(this);
+		server.setting();
+		
+	}
+	
+	public static void main(String[] args) {
+		new ServerGUI();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+//	jtf에 입력된 문자열 얻어냄
+		String msg = jtf.getText() + "\n";
+//	textfield에 더하여 출력
+		jta.append(msg);
+//	콘솔에 입력된 값 띄우기
+		System.out.println(msg);
+//	PracticeServer의 sendMessage 메소드 실행
+		server.sendMessage(msg);
+//	jtf에 입력됐던 텍스트 지우기
+		jtf.setText("");
+	}
+
+	public void appendMsg(String msg) {
+//	msg 매개인자를 textarea에 출력
+		jta.append(msg);
+//	msg매개 인자를 콘솔에 출력
+		System.out.print("날아온 메세지 : " + msg);
+	}
+
+}
