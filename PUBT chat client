@@ -1,0 +1,100 @@
+package com.Game;
+
+import java.awt.TextArea;
+import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+
+import javax.swing.JFrame;
+
+public class PUBTClient extends JFrame implements ActionListener{
+	TextField tf;
+	TextArea ta;
+	OutputStream os;
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String msg = tf.getText() + "\n";
+		try {
+			os.write(msg.getBytes());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		tf.setText("");
+		tf.setText("");
+	}
+	
+	public PUBTClient() {
+		
+		setLayout(null);
+		tf = new TextField();
+		tf.addActionListener(this);
+		ta = new TextArea();
+		ta.setBounds(434,0,300,550);
+		tf.setBounds(434,510,300,100);
+		
+		add(tf);
+		add(ta);
+		setBounds(200,200,700,650);
+		setVisible(true);
+		
+		String ip = "192.168.1.71";
+		int port = 5000;
+		
+		Socket sock = null;
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+		PrintStream ps = null;
+		Scanner sc = new Scanner(System.in);
+		
+		try {
+			sock = new Socket(ip, port);
+			os = sock.getOutputStream();
+			is = sock.getInputStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			
+			while(true){
+				InetAddress addr = sock.getInetAddress();
+				String msg = br.readLine();
+				ta.setText(ta.getText() + "\n" + "[" + addr + "님의 대화]" + msg);
+			}
+			
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {
+				if(br!=null)br.close();
+				if(ps!=null)ps.close();
+				if(isr!=null)isr.close();
+				if(is!=null)is.close();
+				if(os!=null)os.close();
+				if(sock!=null)sock.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+	public static void main(String[] args) {
+		new PUBTClient();
+		
+	}
+
+	
+
+}
