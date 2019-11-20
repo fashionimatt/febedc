@@ -1,0 +1,33 @@
+package com.practice;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class PracticeServer {
+
+	public static void main(String[] args) {
+		ServerSocket serversocket;
+		Socket sock;
+		DataInputStream dis;
+		DataOutputStream dos;
+		
+		try {
+			serversocket = new ServerSocket(6000);
+			System.out.println("서버 접속 대기...");
+			sock = serversocket.accept();
+			System.out.println(sock.getInetAddress() + "클라이언트가 서버에 연결되었습니다");
+			dis = new DataInputStream(sock.getInputStream());
+			dos = new DataOutputStream(sock.getOutputStream());
+			
+			String msg = dis.readUTF();
+			System.out.println("클라이언트로부터의 메세지는 : " + msg);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}
