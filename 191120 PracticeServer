@@ -1,4 +1,4 @@
-package com.practice;
+package chat.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -7,27 +7,78 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class PracticeServer {
+	
+//	서버 생성을 위한 ServerSocket
+	private ServerSocket serversocket;
+//	접속자를 받기 위한 Socket
+	private Socket sock;
+//	입력 스트림 생성을 위한 DataInputStream
+	private DataInputStream dis;
+//	출력 스트림 생성을 위한 DataOutputStream
+	private DataOutputStream dos;
+//	ServerGUI와의 연동 위한 변수 생성
+	private ServerGUI gui;
+	private String msg;
+	
+//	gui 참조 변수가 가리킬 ServerGUI 객체 지정을 위해 setGUI
+	public void setGui(ServerGUI gui) {
+//	매개 인자로 들어오는 gui가 필드에 깔린 gui가 될 것이다! 
+		this.gui = gui;		
+	}
+	
 
-	public static void main(String[] args) {
-		ServerSocket serversocket;
-		Socket sock;
-		DataInputStream dis;
-		DataOutputStream dos;
-		
+	public void setting(){
 		try {
+//	6000번 포트로 접속하는 서버 생성
 			serversocket = new ServerSocket(6000);
 			System.out.println("서버 접속 대기...");
+//	접속 대기!
 			sock = serversocket.accept();
+//	접속되면 어떤 IP의 접속자가 연결됐는지 출력
 			System.out.println(sock.getInetAddress() + "클라이언트가 서버에 연결되었습니다");
+			
+//	소켓에 입출력 스트림 만들어줌
 			dis = new DataInputStream(sock.getInputStream());
 			dos = new DataOutputStream(sock.getOutputStream());
 			
+//	입력된 정보 읽어들여서 msg에 대입
 			String msg = dis.readUTF();
+//	msg 출력
 			System.out.println("클라이언트로부터의 메세지는 : " + msg);
+//	gui에 정의된 appendMsg 메소드 실행 (위의 msg를 매개 인자로 받음)
+			gui.appendMsg(msg);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		while(dis!=null){
+			try {
+				msg = dis.readUTF();
+				gui.appendMsg(msg);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
 	}
+	
+	public static void main(String[] args) {
+//	main 메소드에서 non-static인 setting 메소드를 실행하기 위한 자기 객체 생성
+		PracticeServer practiceserver = new PracticeServer();
+//	setting 메소드 실행
+		practiceserver.setting();
+	}
+
+
+	public void sendMessage(String msg) {
+		try {
+//	서버 textField에 입력한 값이 client측으로 전송!
+			dos.writeUTF(msg);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 
 }
