@@ -1,0 +1,58 @@
+package chat.client;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+import chat.server.ServerGUI;
+
+public class ClientGUI extends JFrame implements ActionListener {
+	
+//	JtextArea(int 행(가로), int 열(세로))
+	private JTextArea jta = new JTextArea(40,25);
+//	JTextField(int 몇글자까지 출력할지)
+	private JTextField jtf = new JTextField(25);
+//	PracticeClient와의 연동을 위한 객체 생성
+	private PracticeClient client = new PracticeClient();
+
+	public ClientGUI() {
+//	생성자 밖에 이미 있는 actionpeformed 메소드를 인자로 받음
+		jtf.addActionListener(this);
+		
+		add(jta, BorderLayout.CENTER);
+		add(jtf, BorderLayout.SOUTH);
+		
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setVisible(true);
+		setBounds(800,100,400,600);
+		setTitle("Client Part");
+		
+// ClientGUI 타입의 인자는 내가 차지!
+		client.setGui(this);
+// PracticeClient에 있는 connect 메소드를 UI 위에서 실행
+		client.connect();
+	}
+	
+	public static void main(String[] args) {
+		new ClientGUI();
+	}
+
+//	말치면 보내는 부분
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String msg = jtf.getText() + "\n";
+		jta.append(msg);
+		System.out.println(msg);
+		client.sendMessage(msg);
+		jtf.setText("");
+	}
+
+	public void appendMsg(String msg) {
+//	서버에서 전송된 msg들이 클라이언트 textArea에 출력되게끔!
+		jta.append(msg);
+	}
+}
