@@ -1,52 +1,62 @@
-package chat.client;
+package com.practice;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.util.Scanner;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-
-import chat.server.ServerGUI;
-
-public class ClientGUI extends JFrame implements ActionListener {
-	
-//	JtextArea(int 행(가로), int 열(세로))
-	private JTextArea jta = new JTextArea(40,25);
-//	JTextField(int 몇글자까지 출력할지)
-	private JTextField jtf = new JTextField(25);
-//	PracticeClient와의 연동을 위한 객체 생성
-	private PracticeClient client = new PracticeClient();
-
-	public ClientGUI() {
-//	생성자 밖에 이미 있는 actionpeformed 메소드를 인자로 받음
-		jtf.addActionListener(this);
-		
-		add(jta, BorderLayout.CENTER);
-		add(jtf, BorderLayout.SOUTH);
-		
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setVisible(true);
-		setBounds(800,100,400,600);
-		setTitle("Client Part");
-		
-// ClientGUI 타입의 인자는 내가 차지!
-		client.setGui(this);
-// PracticeClient에 있는 connect 메소드를 UI 위에서 실행
-		client.connect();
-	}
-	
-	public static void main(String[] args) {
-		new ClientGUI();
-	}
+ 
+public class ClientGUI extends JFrame implements ActionListener{
+ 
+    private static final long serialVersionUID = 1L;
+    private JFrame jframe = new JFrame();
+    private JTextArea jta = new JTextArea(40, 20);
+    private JTextField jtf = new JTextField(20);
+    private PracticeClient client = new PracticeClient();
+    private JButton enter = new JButton("전송");
+    private static String nickName;
+     
+    public ClientGUI() {
+    	setResizable(false);
+    	jta.setEditable(false);
+    	enter.setBounds(600,415,75,20);
+    	jta.setBounds(475,7,200,400);
+    	jtf.setBounds(475,415,120,20);
+    	setLayout(null);
+    	add(enter);
+    	add(jta);
+    	add(jtf);
+        enter.addActionListener(this);
+        jtf.addActionListener(this);
+         
+        pack();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+        setBounds(800, 100, 700, 600);
+        setTitle("Player Unknown's Battle Tetris ver 0.2.0");
+         
+        client.setGui(this);
+        client.setNickname(nickName);
+        client.connect();
+    }
+     
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("당신의 닉네임부터 설정하세요 : ");
+        nickName = scanner.nextLine();
+        scanner.close();
+        new ClientGUI();
+    }
+     
 
 //	말치면 보내는 부분
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String msg = jtf.getText() + "\n";
-		jta.append(msg);
-		System.out.println(msg);
+		String msg ="<" + nickName + ">" + " : " +  jtf.getText() + "\n";
 		client.sendMessage(msg);
 		jtf.setText("");
 	}
@@ -54,5 +64,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public void appendMsg(String msg) {
 //	서버에서 전송된 msg들이 클라이언트 textArea에 출력되게끔!
 		jta.append(msg);
+	}
+	
+	public void getNickname(String nickName){
+		this.nickName = nickName;
 	}
 }
