@@ -1,0 +1,80 @@
+package com.StartScreen;
+
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.TextField;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
+import com.practice.ClientGUI;
+
+
+public class StartScreen extends JFrame {
+	
+	String nickName;
+	ClientGUI cgui;
+	private static TextField userIdtf;
+	public StartScreen() {
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		
+		//이미지 생성 및 레이블에 부착
+		ImageIcon img = new ImageIcon("tetris bg1.png");
+		Image frameIcon = kit.getImage("icon.png");
+		setIconImage(frameIcon);
+		JLabel imglabel = new JLabel(img);
+		add(imglabel);
+		//사용자 이름 필드 및 로그인, 게임 종료 버튼 생성
+		userIdtf = new TextField(15);
+		JButton login = new JButton("로그인");
+		JButton exit = new JButton("게임 종료");
+		exit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		JLabel userId = new JLabel("User Name");
+		userId.setFont(new Font("Times",Font.BOLD, 19));
+		JLabel madeBy = new JLabel();
+		madeBy.setText("Made by. Team PUBT");
+		add(userIdtf);
+		add(login);
+		add(exit);
+		add(userId);
+		add(madeBy);
+		
+		setLayout(null);
+		imglabel.setBounds(40,30,600,200);
+		userId.setBounds(300,260,100,30);
+		userIdtf.setBounds(274,295,150,20);
+		login.setBounds(245,345,100,50);
+		exit.setBounds(355,345,100,50);
+		madeBy.setBounds(295,400,350,50); 
+		
+		setTitle("Tetris ver 0.1.0");
+		setBounds(200,200,700,500);
+		setVisible(true);
+		
+	}
+//	@Override
+//	public void actionPerformed(ActionEvent e) {
+//		this.setVisible(false);
+//		cgui.getNickname(nickName);
+//		cgui.setVisible(true);
+//	}
+	
+	public static void main(String[] args) {
+		new StartScreen();
+	}
+
+
+}
