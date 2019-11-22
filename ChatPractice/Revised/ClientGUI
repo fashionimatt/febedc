@@ -1,0 +1,162 @@
+package client;
+
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.Socket;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+class StartScreen extends JFrame implements ActionListener{
+	
+	Image frameIcon;
+	ImageIcon titleImg;
+	JLabel titleImgLabel,idLabel,madeBy;
+	static JTextField idInput;
+	JButton logIn,exit;
+	ClientGUI cgui;
+	WriteThread wt;
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		wt.sendMsg();
+		cgui.isFirst = false;
+		cgui.setVisible(true);
+		this.dispose();
+		
+	}
+	
+	static public String getId(){
+		return idInput.getText();
+	}
+	
+	public StartScreen(WriteThread wt, ClientGUI cgui) {
+		setTitle("Player Unknown's Battle Omok");
+		setDefaultCloseOperation(3);
+		this.cgui = cgui;
+		this.wt = wt;
+		
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		frameIcon = kit.getImage("icon.png");
+		setIconImage(frameIcon);
+		
+		titleImg = new ImageIcon("tetris bg1.png");
+		titleImgLabel = new JLabel(titleImg);
+		
+		idLabel = new JLabel("User Name");
+		idLabel.setFont(new Font("HY견고딕",1,18));
+		
+		madeBy = new JLabel("Made By. Team PUBO");
+		madeBy.setFont(new Font("HY견고딕",1,15));
+		
+		idInput = new JTextField(20);
+		idInput.setFont(new Font("HY견고딕",1,15));
+		idInput.addActionListener(this);
+		
+		logIn = new JButton("접속");
+		logIn.addActionListener(this);
+		exit = new JButton("게임 종료");
+		exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		
+		titleImgLabel.setBounds(50,30,600,200);
+		idLabel.setBounds(300,270,100,30);
+		idInput.setBounds(290,305,120,30);
+		logIn.setBounds(240,355,100,40);
+		exit.setBounds(360,355,100,40);
+		madeBy.setBounds(275,415,160,20);
+		
+		add(titleImgLabel);
+		add(idLabel);
+		add(madeBy);
+		add(idInput);
+		add(logIn);
+		add(exit);
+
+		setLayout(null);
+		setResizable(false);
+		setVisible(true);
+		setSize(700,500);
+		Dimension d = kit.getScreenSize();
+		setLocation((int)(d.getWidth()-this.getWidth())/2, (int)(d.getHeight()-this.getHeight())/2);
+	}
+	
+}
+
+public class ClientGUI extends JFrame implements ActionListener {
+		
+		JTextField chatField = new JTextField(20);
+		JTextArea chatArea = new JTextArea(25,40);
+		JButton submit = new JButton("전송");
+		JButton exit = new JButton("게임 종료");
+		boolean isFirst = true;
+		Socket sock;
+		WriteThread wt;
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String Id = StartScreen.getId();
+			if(e.getSource()==submit||e.getSource()==chatField){
+				if(chatField.getText().equals("")){
+					return;
+				}
+				chatArea.append("["+Id+"]"+chatField.getText()+"\n");
+				wt.sendMsg();
+				chatField.setText("");
+			} else {
+				this.dispose();
+			}
+		}
+		
+		public ClientGUI(Socket sock) {
+			setDefaultCloseOperation(3);
+			setTitle("Player Unknown's Battle Omok");
+			this.sock = sock;
+			wt = new WriteThread(this);
+			new StartScreen(wt, this);
+			
+			Toolkit kit = Toolkit.getDefaultToolkit();
+			
+			chatField.setFont(new Font("HY견고딕",0,12));
+			chatField.addActionListener(this);
+			
+			chatArea.setEditable(false);
+			chatArea.setFont(new Font("HY견고딕",0,12));
+			
+			submit.addActionListener(this);
+			exit.addActionListener(this);
+			
+			add(chatField);
+			add(chatArea);
+			add(submit);
+			add(exit);
+			
+			setLayout(null);
+			chatField.setBounds(480,510,205,30);
+			chatArea.setBounds(480,5,205,495);
+			submit.setBounds(480,545,95,30);
+			exit.setBounds(590,545,95,30);
+			
+			
+			Dimension d = kit.getScreenSize();
+			setResizable(false);
+			setSize(700,610);
+			setLocation((int)(d.getWidth()-this.getWidth())/2, (int)(d.getHeight()-this.getHeight())/2);
+			setVisible(false);
+			
+			
+		}
+		
+}
