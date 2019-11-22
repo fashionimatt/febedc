@@ -31,7 +31,7 @@ class StartScreen extends JFrame implements ActionListener{
 		cgui.isFirst = false;
 		cgui.setVisible(true);
 		this.dispose();
-		
+		System.out.println(cgui.isFirst);
 	}
 	
 	static public String getId(){
