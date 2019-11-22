@@ -23,10 +23,12 @@ class echoThread extends Thread{
 	@Override
 	public void run() {
 		DataInputStream dis = null;
+		DataOutputStream dos = null;
 		try {
 			dis = new DataInputStream(sock.getInputStream());
+			String msg = null;
 			while(true){
-				String msg = dis.readUTF();
+				msg = dis.readUTF();
 				if(msg==null){
 					list.remove(sock);
 					break;
@@ -37,8 +39,8 @@ class echoThread extends Thread{
 			e.printStackTrace();
 		} finally {
 			try {
-				if(sock!=null)sock.close();
 				if(dis!=null)dis.close();
+				if(sock!=null)sock.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
