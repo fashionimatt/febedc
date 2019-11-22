@@ -1,0 +1,95 @@
+package server;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+class echoThread extends Thread{
+	
+	Socket sock;
+	ArrayList<Socket> list;
+	
+	public echoThread(Socket sock, ArrayList<Socket> list) {
+		this.sock = sock;
+		this.list = list;
+	}
+	
+	@Override
+	public void run() {
+		DataInputStream dis = null;
+		try {
+			dis = new DataInputStream(sock.getInputStream());
+			while(true){
+				String msg = dis.readUTF();
+				if(msg==null){
+					list.remove(sock);
+					break;
+				}
+				sayAll(msg);
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(sock!=null)sock.close();
+				if(dis!=null)dis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	private void sayAll(String msg) {
+		try {
+			for(Socket sock:list){
+				if(sock!=this.sock){
+				DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+				dos.writeUTF(msg);
+				dos.flush();
+				}
+			}
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
+		
+	} //sayAll end
+}//Class echoThread end
+
+
+public class ServerBackground {
+
+	public static void main(String[] args) {
+		ServerSocket server = null;
+		String nickName = null;
+		ArrayList<Socket> list = new ArrayList();
+		try {
+			server = new ServerSocket(5100);
+			System.out.println("Server is open...");
+			while(true){
+				Socket sock = server.accept();
+				InetAddress addr = sock.getInetAddress();
+				System.out.println(addr.getHostAddress() + "님이 접속하셨습니다" );
+				list.add(sock);
+				new echoThread(sock,list).start();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {
+				if(server!=null)server.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		
+	}
+
+}
