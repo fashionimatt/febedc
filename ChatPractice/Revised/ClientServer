@@ -28,9 +28,9 @@ class WriteThread{
 			//서버로 사용자의 입력 값을 전송하기 위한 출력 스트림 생성
 			dos = new DataOutputStream(sock.getOutputStream());
 			//첫번째로 보내는 정보는 id 와 ip.
-			if(cgui.isFirst = true){
-				InetAddress addr = sock.getInetAddress();
-				String ip = addr.getHostAddress();
+			InetAddress addr = sock.getInetAddress();
+			String ip = addr.getHostAddress();
+			if(cgui.isFirst == true){
 				getId();
 				System.out.println("<ip> : "+ ip + " <id> : " + Id);
 				//얻어낸 ip와 id를 콘솔에 표기
