@@ -1,12 +1,17 @@
 package client;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 //	사용자가 입력한 문자열을 서버로 전송하는 스레드
 class WriteThread{
@@ -22,11 +27,13 @@ class WriteThread{
 	
 	public void sendMsg(){
 		//사용자가 입력하는 값을 읽어오기 위한 입력 스트림 생성
-		DataInputStream dis = new DataInputStream(System.in);
-		DataOutputStream dos = null;
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		OutputStream os = null;
+		PrintStream ps = null;
 		try {
 			//서버로 사용자의 입력 값을 전송하기 위한 출력 스트림 생성
-			dos = new DataOutputStream(sock.getOutputStream());
+			os = sock.getOutputStream();
+			ps = new PrintStream(os);
 			//첫번째로 보내는 정보는 id 와 ip.
 			InetAddress addr = sock.getInetAddress();
 			String ip = addr.getHostAddress();
@@ -42,13 +49,12 @@ class WriteThread{
 				msg = "["+Id+"] " + cgui.chatField.getText();
 			}
 			//입력된 문자열을 서버로 전송!
-			dos.writeUTF(msg);
-			dos.writeUTF(Id);
+			ps.println(msg);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
 			try {
-				if(dis!=null)dis.close();
+				if(br!=null)br.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -59,6 +65,18 @@ class WriteThread{
 	private void getId() {
 		Id = StartScreen.getId();
 	}
+	
+	private void sendId() {
+		try {
+			getId();
+			DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+			dos.writeUTF(Id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 }
 
 class ReadThread extends Thread{
@@ -70,17 +88,20 @@ class ReadThread extends Thread{
 	}
 	@Override
 	public void run() {
-		DataInputStream dis = null;
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
 		try {
-			dis = new DataInputStream(sock.getInputStream());
+			is = sock.getInputStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
 			while(true){
-				String str = dis.readUTF();
+				String str = br.readLine();
 				if(str==null){
 					System.out.println("Connection Lost..");
 					break;
 				}
 				cgui.chatArea.append(str+"\n");
-				
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -89,6 +110,141 @@ class ReadThread extends Thread{
 	}
 }
 
+public class ClientServer {
+
+	public static void main(String[] args) {
+		
+		String ip = "192.168.1.71";
+		int port = 5100;
+		Socket sock = null;
+		ClientGUI cgui;
+			
+			try {
+				sock = new Socket(ip,port);
+				System.out.println("Connection is Successful...");
+				cgui = new ClientGUI(sock);
+				new ReadThread(sock, cgui).start();
+				
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		
+	}
+
+}
+package client;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+//	사용자가 입력한 문자열을 서버로 전송하는 스레드
+class WriteThread{
+	Socket sock;
+	ClientGUI cgui;
+	String msg;
+	String Id;
+	
+	public WriteThread(ClientGUI cgui) {
+		this.cgui = cgui;
+		this.sock = cgui.sock;
+	}
+	
+	public void sendMsg(){
+		//사용자가 입력하는 값을 읽어오기 위한 입력 스트림 생성
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		OutputStream os = null;
+		PrintStream ps = null;
+		try {
+			//서버로 사용자의 입력 값을 전송하기 위한 출력 스트림 생성
+			os = sock.getOutputStream();
+			ps = new PrintStream(os);
+			//첫번째로 보내는 정보는 id 와 ip.
+			InetAddress addr = sock.getInetAddress();
+			String ip = addr.getHostAddress();
+			if(cgui.isFirst == true){
+				//Getter이용
+				getId();
+				System.out.println("<ip> : "+ ip + " <id> : " + Id);
+				//얻어낸 ip와 id를 콘솔에 표기
+				msg = "["+Id+"] 님이 접속하셨습니다 (" + ip + ")";
+			//처음 접속한 상황에서는 접속했다는 문구를 띄어주지만
+			// 그 다음부터는 사용자가 입력한 값을 띄어줌
+			} else {
+				msg = "["+Id+"] " + cgui.chatField.getText();
+			}
+			//입력된 문자열을 서버로 전송!
+			ps.println(msg);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally{
+			try {
+				if(br!=null)br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+	private void getId() {
+		Id = StartScreen.getId();
+	}
+	
+	private void sendId() {
+		try {
+			getId();
+			DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+			dos.writeUTF(Id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+}
+
+class ReadThread extends Thread{
+	Socket sock;
+	ClientGUI cgui;
+	public ReadThread(Socket sock, ClientGUI cgui) {
+		this.sock = sock;
+		this.cgui = cgui;
+	}
+	@Override
+	public void run() {
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+		try {
+			is = sock.getInputStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			while(true){
+				String str = br.readLine();
+				if(str==null){
+					System.out.println("Connection Lost..");
+					break;
+				}
+				cgui.chatArea.append(str+"\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+}
 
 public class ClientServer {
 
