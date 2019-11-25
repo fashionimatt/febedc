@@ -49,7 +49,7 @@ class StartScreen extends JFrame implements ActionListener{
 		frameIcon = kit.getImage("icon.png");
 		setIconImage(frameIcon);
 		
-		titleImg = new ImageIcon("omok.png");
+		titleImg = new ImageIcon("pubc.png");
 		titleImgLabel = new JLabel(titleImg);
 		
 		idLabel = new JLabel("User Name");
@@ -72,7 +72,7 @@ class StartScreen extends JFrame implements ActionListener{
 			}
 		});
 		
-		titleImgLabel.setBounds(50,30,600,250);
+		titleImgLabel.setBounds(50,15,600,250);
 		idLabel.setBounds(300,250,100,30);
 		idInput.setBounds(290,285,120,30);
 		logIn.setBounds(240,335,100,40);
@@ -124,7 +124,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		
 		public ClientGUI(Socket sock) {
 			setDefaultCloseOperation(3);
-			setTitle("Player Unknown's Battle Omok");
+			setTitle("Player Unknown's Battle Chatting");
 			this.sock = sock;
 			wt = new WriteThread(this);
 			new StartScreen(wt, this);
@@ -150,16 +150,16 @@ public class ClientGUI extends JFrame implements ActionListener {
 			add(exit);
 			
 			setLayout(null);
-			guestList.setBounds(480,5,245,145);
-			scrollPane.setBounds(480,155,245,350);			
-			chatField.setBounds(480,510,245,30);
-			submit.setBounds(480,545,115,32);
-			exit.setBounds(610,545,115,32);
+			guestList.setBounds(10,5,245,145);
+			scrollPane.setBounds(10,155,245,350);			
+			chatField.setBounds(10,510,245,30);
+			submit.setBounds(10,545,115,32);
+			exit.setBounds(140,545,115,32);
 			
 			
 			Dimension d = kit.getScreenSize();
 			setResizable(false);
-			setSize(740,625);
+			setSize(270,625);
 			setLocation((int)(d.getWidth()-this.getWidth())/2, (int)(d.getHeight()-this.getHeight())/2);
 			setVisible(false);
 			
