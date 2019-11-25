@@ -1,8 +1,12 @@
 package server;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,7 +17,7 @@ class echoThread extends Thread{
 	
 	Socket sock;
 	ArrayList<Socket> list;
-	TreeSet<Socket> gusetList;
+	TreeSet<String> guestList;
 	
 	public echoThread(Socket sock, ArrayList<Socket> list) {
 		this.sock = sock;
@@ -22,26 +26,33 @@ class echoThread extends Thread{
 	
 	@Override
 	public void run() {
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
 		DataInputStream dis = null;
 		try {
-			dis = new DataInputStream(sock.getInputStream());
+			is = sock.getInputStream();
+			isr = new InputStreamReader(is);
+			br = new BufferedReader(isr);
+			dis = new DataInputStream(is);
 			String msg = null;
 			String Id = null;
 			while(true){
-				msg = dis.readUTF();
-				Id = dis.readUTF();
+				msg = br.readLine();
 				if(msg==null){
 					list.remove(sock);
 					break;
 				}
 				sayAll(msg);
 			} 
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				if(dis!=null)dis.close();
-				if(sock!=null)sock.close();
+				if(br!=null)br.close();
+				if(isr!=null)isr.close();
+				if(is!=null)is.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -54,9 +65,10 @@ class echoThread extends Thread{
 		try {
 			for(Socket sock:list){
 				if(sock!=this.sock){
-				DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
-				dos.writeUTF(msg);
-				dos.flush();
+				OutputStream os = sock.getOutputStream();
+				PrintStream ps = new PrintStream(os);
+				ps.println(msg);
+				ps.flush();
 				}
 			}
 		} catch (IOException e) {
