@@ -3,17 +3,17 @@ package server;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 class echoThread extends Thread{
 	
 	Socket sock;
 	ArrayList<Socket> list;
+	TreeSet<Socket> gusetList;
 	
 	public echoThread(Socket sock, ArrayList<Socket> list) {
 		this.sock = sock;
@@ -23,12 +23,13 @@ class echoThread extends Thread{
 	@Override
 	public void run() {
 		DataInputStream dis = null;
-		DataOutputStream dos = null;
 		try {
 			dis = new DataInputStream(sock.getInputStream());
 			String msg = null;
+			String Id = null;
 			while(true){
 				msg = dis.readUTF();
+				Id = dis.readUTF();
 				if(msg==null){
 					list.remove(sock);
 					break;
@@ -46,6 +47,7 @@ class echoThread extends Thread{
 			}
 		}
 	}
+	
 	
 	
 	private void sayAll(String msg) {
@@ -79,6 +81,7 @@ public class ServerBackground {
 				InetAddress addr = sock.getInetAddress();
 				System.out.println(addr.getHostAddress() + "님이 접속하셨습니다" );
 				list.add(sock);
+				System.out.println("접속자 수 : " + list.size());
 				new echoThread(sock,list).start();
 			}
 		} catch (IOException e) {
