@@ -31,6 +31,7 @@ class WriteThread{
 			InetAddress addr = sock.getInetAddress();
 			String ip = addr.getHostAddress();
 			if(cgui.isFirst == true){
+				//Getter이용
 				getId();
 				System.out.println("<ip> : "+ ip + " <id> : " + Id);
 				//얻어낸 ip와 id를 콘솔에 표기
@@ -40,8 +41,9 @@ class WriteThread{
 			} else {
 				msg = "["+Id+"] " + cgui.chatField.getText();
 			}
-			//입력된 문자열 서버로 전송!
+			//입력된 문자열을 서버로 전송!
 			dos.writeUTF(msg);
+			dos.writeUTF(Id);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
@@ -78,6 +80,7 @@ class ReadThread extends Thread{
 					break;
 				}
 				cgui.chatArea.append(str+"\n");
+				
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
