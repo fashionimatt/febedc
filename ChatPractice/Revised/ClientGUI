@@ -12,6 +12,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -31,11 +33,10 @@ class StartScreen extends JFrame implements ActionListener{
 		cgui.isFirst = false;
 		cgui.setVisible(true);
 		this.dispose();
-		System.out.println(cgui.isFirst);
 	}
 	
 	static public String getId(){
-		return idInput.getText();
+		return idInput.getText().trim();
 	}
 	
 	public StartScreen(WriteThread wt, ClientGUI cgui) {
@@ -48,7 +49,7 @@ class StartScreen extends JFrame implements ActionListener{
 		frameIcon = kit.getImage("icon.png");
 		setIconImage(frameIcon);
 		
-		titleImg = new ImageIcon("tetris bg1.png");
+		titleImg = new ImageIcon("omok.png");
 		titleImgLabel = new JLabel(titleImg);
 		
 		idLabel = new JLabel("User Name");
@@ -71,12 +72,12 @@ class StartScreen extends JFrame implements ActionListener{
 			}
 		});
 		
-		titleImgLabel.setBounds(50,30,600,200);
-		idLabel.setBounds(300,270,100,30);
-		idInput.setBounds(290,305,120,30);
-		logIn.setBounds(240,355,100,40);
-		exit.setBounds(360,355,100,40);
-		madeBy.setBounds(275,415,160,20);
+		titleImgLabel.setBounds(50,30,600,250);
+		idLabel.setBounds(300,250,100,30);
+		idInput.setBounds(290,285,120,30);
+		logIn.setBounds(240,335,100,40);
+		exit.setBounds(360,335,100,40);
+		madeBy.setBounds(275,395,160,20);
 		
 		add(titleImgLabel);
 		add(idLabel);
@@ -98,9 +99,10 @@ class StartScreen extends JFrame implements ActionListener{
 public class ClientGUI extends JFrame implements ActionListener {
 		
 		JTextField chatField = new JTextField(20);
-		JTextArea chatArea = new JTextArea(25,40);
+		JTextArea chatArea = new JTextArea();
 		JButton submit = new JButton("전송");
 		JButton exit = new JButton("게임 종료");
+		JList guestList = new JList();
 		boolean isFirst = true;
 		Socket sock;
 		WriteThread wt;
@@ -128,31 +130,36 @@ public class ClientGUI extends JFrame implements ActionListener {
 			new StartScreen(wt, this);
 			
 			Toolkit kit = Toolkit.getDefaultToolkit();
+			JScrollPane scrollPane = new JScrollPane();
+			add(scrollPane);
+			scrollPane.setViewportView(chatArea);
 			
 			chatField.setFont(new Font("HY견고딕",0,12));
 			chatField.addActionListener(this);
 			
 			chatArea.setEditable(false);
-			chatArea.setFont(new Font("HY견고딕",0,12));
+			chatArea.setFont(new Font("HY견고딕",0,14));
 			
 			submit.addActionListener(this);
 			exit.addActionListener(this);
 			
+			
+			add(guestList);
 			add(chatField);
-			add(chatArea);
 			add(submit);
 			add(exit);
 			
 			setLayout(null);
-			chatField.setBounds(480,510,205,30);
-			chatArea.setBounds(480,5,205,495);
-			submit.setBounds(480,545,95,30);
-			exit.setBounds(590,545,95,30);
+			guestList.setBounds(480,5,245,145);
+			scrollPane.setBounds(480,155,245,350);			
+			chatField.setBounds(480,510,245,30);
+			submit.setBounds(480,545,115,32);
+			exit.setBounds(610,545,115,32);
 			
 			
 			Dimension d = kit.getScreenSize();
 			setResizable(false);
-			setSize(700,610);
+			setSize(740,625);
 			setLocation((int)(d.getWidth()-this.getWidth())/2, (int)(d.getHeight()-this.getHeight())/2);
 			setVisible(false);
 			
