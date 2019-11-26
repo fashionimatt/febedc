@@ -177,7 +177,7 @@ public class Service extends Thread{
 
 		      case "300": //메시지		    	        
 
-		    	          messageRoom("300|["+nickName +"]▶ "+msgs[1]);		    	         
+		    	          messageRoom("300|["+nickName +"]  "+msgs[1]);		    	         
 
 		    	          //클라이언트에게 메시지 보내기
 
@@ -247,7 +247,7 @@ public class Service extends Thread{
 
 		 Room r= roomV.get(i);
 
-		 str += r.title+"--"+r.count;
+		 str += r.title+" ( 인원 : "+r.count + "명)";
 
 		 if(i<roomV.size()-1)str += ",";
 
