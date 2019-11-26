@@ -1,41 +1,25 @@
 package chat;
 
 import java.awt.Color;
-
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
 import java.awt.event.ActionListener;
-
 import java.awt.event.MouseAdapter;
-
 import java.awt.event.MouseEvent;
-
 import java.io.BufferedReader;
-
 import java.io.IOException;
-
 import java.io.InputStreamReader;
-
 import java.io.OutputStream;
-
 import java.net.Socket;
-
 import java.net.UnknownHostException;
 
-
-
 import javax.swing.JButton;
-
 import javax.swing.JFrame;
-
 import javax.swing.JList;
-
 import javax.swing.JOptionPane;
-
 import javax.swing.JPanel;
-
 import javax.swing.JScrollPane;
-
 import javax.swing.border.TitledBorder;
 
 
@@ -54,11 +38,11 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
    public MainChat() {	 
 
-	 setTitle("대기실");
+	 setTitle("Player Unknown's Battle Chatting");
 
 	 cc = new ChatClient();
 	 roomInfo = new JList<String>();
-	   roomInfo.setBorder(new TitledBorder("방정보"));
+	   roomInfo.setBorder(new TitledBorder("방 목록"));
 
 	 roomInfo.addMouseListener(new MouseAdapter() {
 	     @Override
@@ -75,22 +59,24 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
 	 });
 
-	   
-
-	   
-
 	 roomInwon = new JList<String>();
-	   roomInwon.setBorder(new TitledBorder("인원정보"));
+	   roomInwon.setBorder(new TitledBorder("인원 정보"));
 	 waitInfo = new JList<String>();
-       waitInfo.setBorder(new TitledBorder("대기실정보"));
+       waitInfo.setBorder(new TitledBorder("대기실 인원"));
 
      sp_roomInfo = new JScrollPane(roomInfo);
      sp_roomInwon = new JScrollPane(roomInwon);
      sp_waitInfo = new JScrollPane(waitInfo);
 
-     bt_create = new JButton("방만들기");
-     bt_enter = new JButton("방들어가기");
-     bt_exit = new JButton("나가기");     
+     bt_create = new JButton("방 만들기");
+     bt_create.setForeground(Color.WHITE);
+     bt_create.setBackground(new Color(114,137,217));
+     bt_enter = new JButton("방 들어가기");
+     bt_enter.setForeground(Color.WHITE);
+     bt_enter.setBackground(new Color(114,137,217));
+     bt_exit = new JButton("종료");     
+     bt_exit.setForeground(Color.WHITE);
+     bt_exit.setBackground(new Color(114,137,217));
 
      p = new JPanel();
 
@@ -103,7 +89,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
      bt_exit.setBounds(320,410,150,30);
 
      p.setLayout(null);
-      p.setBackground(Color.orange);
+     p.setBackground(Color.DARK_GRAY);
      p.add(sp_roomInfo);
      p.add(sp_roomInwon);
      p.add(sp_waitInfo);
@@ -111,6 +97,9 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
      p.add(bt_enter);
      p.add(bt_exit);
 
+     Toolkit kit = Toolkit.getDefaultToolkit();
+     Image icon = kit.getImage("icon.png");
+     setIconImage(icon);
      add(p);
      setBounds(300,200, 500, 500);
      setVisible(true);
@@ -134,6 +123,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 	 //대기실(MainChat)
 	   bt_create.addActionListener(this);
 	   bt_enter.addActionListener(this);
+	   bt_exit.addActionListener(this);
 
 	 //대화방(ChatClient)
 	   cc.sendTF.addActionListener(this);
@@ -154,7 +144,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 		 String title = JOptionPane.showInputDialog(this,"방제목:");
 		 //방제목을 서버에게 전달
 		 sendMsg("160|"+title);
-		 cc.setTitle("채팅방-["+title+"]");
+		 cc.setTitle("Player Unknown's Battle Chatting - 채팅방 ["+title+"]");
 		 sendMsg("175|");//대화방내 인원정보 요청	 
 		 setVisible(false);
 		 cc.setVisible(true); //대화방이동
@@ -166,11 +156,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 		 }
 		 sendMsg("200|"+ selectedRoom);
 
-		  
-
 		 sendMsg("175|");//대화방내 인원정보 요청
-
-		 
 
 		 setVisible(false);
 
@@ -222,7 +208,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
 		//Socket s = new Socket(String host<서버ip>, int port<서비스번호>); 
 
-		  Socket s = new Socket("192.168.1.71", 5000);//연결시도		  
+		  Socket s = new Socket("172.30.1.50", 5000);//연결시도		  
 		  in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		  //in: 서버메시지 읽기객체    서버-----msg------>클라이언트
 		  out = s.getOutputStream();
@@ -311,7 +297,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
 			     case "200"://대화방 입장
 
-			    	   cc.ta.append("=========["+msgs[1]+"]님 입장=========\n");
+			    	   cc.ta.append("["+msgs[1]+"] 님이 입장하셨습니다 (^.^)\n");
 
 					   cc.ta.setCaretPosition(cc.ta.getText().length());
 
@@ -321,7 +307,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
 			     case "400"://대화방 퇴장
 
-			    	 cc.ta.append("=========["+msgs[1]+"]님 퇴장=========\n");
+			    	 cc.ta.append("["+msgs[1]+"]님이 퇴장하셨습니다 -_-zzZ\n");
 
 			    	 cc.ta.setCaretPosition(cc.ta.getText().length());
 
