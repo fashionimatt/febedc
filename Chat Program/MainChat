@@ -1,6 +1,7 @@
 package chat;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -16,10 +17,12 @@ import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 
@@ -35,6 +38,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
    BufferedReader in;
    OutputStream out;
    String selectedRoom;
+   String nickName;
 
    public MainChat() {	 
 
@@ -50,7 +54,7 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 	    	 String str = roomInfo.getSelectedValue(); //"자바방--1"
 	    	 if(str==null)return;
 			 System.out.println("STR="+str);
-			 selectedRoom = str.substring(0, str.indexOf("-"));
+			 selectedRoom = str.substring(0, str.indexOf("("));
 			         //"자바방"  <----  substring(0,3)
 
 			 //대화방 내의 인원정보
@@ -80,16 +84,16 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
      p = new JPanel();
 
-     sp_roomInfo.setBounds(10, 10, 300, 300);
-     sp_roomInwon.setBounds(320, 10, 150, 300);
-     sp_waitInfo.setBounds(10, 320, 300, 130);
+     sp_roomInfo.setBounds(10, 35, 300, 300);
+     sp_roomInwon.setBounds(320, 35, 150, 300);
+     sp_waitInfo.setBounds(10, 370, 300, 130);
 
-     bt_create.setBounds(320,330,150,30);
-     bt_enter.setBounds(320,370,150,30);
-     bt_exit.setBounds(320,410,150,30);
+     bt_create.setBounds(320,380,150,30);
+     bt_enter.setBounds(320,420,150,30);
+     bt_exit.setBounds(320,460,150,30);
 
      p.setLayout(null);
-     p.setBackground(Color.DARK_GRAY);
+     p.setBackground(new Color(54,56,63));
      p.add(sp_roomInfo);
      p.add(sp_roomInwon);
      p.add(sp_waitInfo);
@@ -101,23 +105,28 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
      Image icon = kit.getImage("icon.png");
      setIconImage(icon);
      add(p);
-     setBounds(300,200, 500, 500);
      setVisible(true);
+     setResizable(false);
+     setBounds(300,200, 500, 550);
      setDefaultCloseOperation(EXIT_ON_CLOSE); 
 
      connect();//서버연결시도 (in,out객체생성)
      new Thread(this).start();//서버메시지 대기
      sendMsg("100|");//(대기실)접속 알림
+     
+     while(true){
+    	 nickName = JOptionPane.showInputDialog(this,"닉네임:");
+    	 if(nickName==null){
+    		 continue;
+    	 }
+    	 break;
+     }
 
-     String nickName = JOptionPane.showInputDialog(this,"대화명:");
-
-     sendMsg("150|"+nickName);//대화명 전달
+     sendMsg("150|"+nickName);//닉네임 전달
      
      eventUp();
 
    }//생성자
-
-   
 
    private void eventUp(){//이벤트소스-이벤트처리부 연결
 	 //대기실(MainChat)
@@ -131,8 +140,6 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 	   cc.bt_exit.addActionListener(this);
    }
 
-   
-
    @Override
 
    public void actionPerformed(ActionEvent e) {
@@ -140,7 +147,6 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 	  Object ob = e.getSource();
 
 	  if(ob==bt_create){//방만들기 요청
-
 		 String title = JOptionPane.showInputDialog(this,"방제목:");
 		 //방제목을 서버에게 전달
 		 sendMsg("160|"+title);
@@ -164,51 +170,30 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 
 	  }else if(ob==cc.bt_exit){//대화방 나가기 요청
 
-		  
-
 		 sendMsg("400|");
-
-		 
-
 		 cc.setVisible(false);
-
 		 setVisible(true); 
 
 	  }else if(ob==cc.sendTF){//(TextField입력)메시지 보내기 요청
 
 		 String msg = cc.sendTF.getText();
-
 		 if(msg.length()>0){
-
 		   sendMsg("300|"+msg); 
-
 		   cc.sendTF.setText("");
-
 		 }
-
 	  }	  
-
-	  
 
 	  else if(ob==bt_exit){//나가기(프로그램종료) 요청
-
 		  System.exit(0);//현재 응용프로그램 종료하기
-
 	  }	  
 
-	  
-
    }//actionPerformed 
-
-   
 
    public void connect(){//(소켓)서버연결 요청
 
 	try {
-
 		//Socket s = new Socket(String host<서버ip>, int port<서비스번호>); 
-
-		  Socket s = new Socket("172.30.1.50", 5000);//연결시도		  
+		  Socket s = new Socket("192.168.1.71", 5000);//연결시도		  
 		  in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		  //in: 서버메시지 읽기객체    서버-----msg------>클라이언트
 		  out = s.getOutputStream();
@@ -221,23 +206,14 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 	  }  
    }//connect
 
-   
-
    public void sendMsg(String msg){//서버에게 메시지 보내기
 
 	 try {
-
 		out.write(  (msg+"\n").getBytes()  );
-
 	 }catch (IOException e) {
-
 		e.printStackTrace();
-
 	}
-
    }//sendMsg
-
-   
 
    public void run(){//서버가 보낸 메시지 읽기
 	   //왜 run메소드 사용? GUI프로그램실행에 영향 미치지않는 코드 작성.
@@ -269,86 +245,93 @@ public class MainChat extends JFrame implements ActionListener, Runnable{
 			    	   break;
 
 			     case "170"://(대기실에서) 대화방 인원정보
-
 			    	   String roomInwons[] = msgs[1].split(",");
-
 			    	   roomInwon.setListData(roomInwons);
-
 			    	   break;
-
-			    	   
 
 			     case "175"://(대화방에서) 대화방 인원정보
 			    	   String myRoomInwons[] = msgs[1].split(",");
 			    	   cc.li_inwon.setListData(myRoomInwons);
 			    	   break;
 
-			    	   
-
 			     case "180"://대기실 인원정보
-
 			    	 String waitNames[] = msgs[1].split(",");
-
 			    	 waitInfo.setListData(waitNames);
-
 			    	 break;
-
-			    	   
 
 			     case "200"://대화방 입장
-
 			    	   cc.ta.append("["+msgs[1]+"] 님이 입장하셨습니다 (^.^)\n");
-
 					   cc.ta.setCaretPosition(cc.ta.getText().length());
-
 			    	   break;
 
-			    	   
-
 			     case "400"://대화방 퇴장
-
 			    	 cc.ta.append("["+msgs[1]+"]님이 퇴장하셨습니다 -_-zzZ\n");
-
 			    	 cc.ta.setCaretPosition(cc.ta.getText().length());
-
 			    	 break;
-
-			    	   
 
 			     case "202"://개설된 방의 타이틀 제목 얻기
-
 			    	 cc.setTitle("채팅방-["+msgs[1]+"]");
-
 			    	 break;
 
-			    	   
-
-			     
-
 			   }//클라이언트 switch
-
-			   
-
 		   }
 
 	  }catch (IOException e) {
-
 		e.printStackTrace();
-
 	 }
 
    }//run
 
-   
-
-   
-
    public static void main(String[] args) {
-
 	  new MainChat();
-
    }
 
-
-
 }
+
+//class startScreen extends JFrame implements ActionListener{
+//	JTextField idInput = new JTextField();
+//	JLabel idLabel = new JLabel();
+//	JLabel bgImage = new JLabel();
+//	JButton logIn = new JButton("접속");
+//	JButton exit = new JButton("종료");
+//	MainChat mc;
+//	
+//	public startScreen() {
+//		add(idInput);
+//		add(idLabel);
+//		add(bgImage);
+//		add(logIn);
+//		add(exit);
+//		
+//		idInput.setBounds(183, 251, 116, 21);
+//		
+//		
+//		Toolkit kit = Toolkit.getDefaultToolkit();
+//		Dimension dim = kit.getScreenSize();
+//		setBackground(new Color(54,56,63));
+//		setLocation((int)(dim.getWidth()-getWidth())/2,(int)(dim.getHeight()-getHeight())/2);
+//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		setSize(370,420);
+//		setLayout(null);
+//		setVisible(true);
+//	}
+//
+//	@Override
+//	public void actionPerformed(ActionEvent e) {
+//		mc.nickName = idInput.getText();
+//	}
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
