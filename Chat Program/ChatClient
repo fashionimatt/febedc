@@ -50,6 +50,7 @@ public class ChatClient extends JFrame{
 	  ta = new JTextArea();
 
 	    ta.setLineWrap(true);//TextArea 가로길이를 벗어나는 text발생시 자동 줄바꿈
+	    ta.setEditable(false);
 
 	  li_inwon = new JList<String>();
 
@@ -63,8 +64,6 @@ public class ChatClient extends JFrame{
 	  bt_exit.setForeground(Color.WHITE);
 	  bt_exit.setBackground(new Color(114,137,217));
 
-	  
-
 	  p = new JPanel();
 
 	  sp_ta.setBounds(10,10,380,390); 
@@ -76,7 +75,7 @@ public class ChatClient extends JFrame{
 	  bt_exit.setBounds(400,410,120,30); 
 
 	  p.setLayout(null);
-	  p.setBackground(Color.DARK_GRAY);
+	  p.setBackground(new Color(54,56,63));
 	  p.add(sp_ta);
 	  p.add(la_msg);
 	  p.add(sendTF);
@@ -88,6 +87,7 @@ public class ChatClient extends JFrame{
 	  Toolkit kit = Toolkit.getDefaultToolkit();
 	  Image icon = kit.getImage("icon.png");
 	  setIconImage(icon);
+	  setResizable(false);
 	  setBounds(300,200,550,500);
 	  //setVisible(true);
 	  sendTF.requestFocus();	  
