@@ -1,13 +1,17 @@
-package chat;
+package Chat;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,6 +19,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,315 +28,417 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
+import javax.swing.SwingConstants;
 
-
-
-public class MainChat extends JFrame implements ActionListener, Runnable{
-
+public class MainChat extends JFrame implements ActionListener, Runnable,KeyListener{
    JList<String> roomInfo,roomInwon,waitInfo;
    JScrollPane sp_roomInfo, sp_roomInwon, sp_waitInfo;
    JButton bt_create, bt_enter, bt_exit;
+   JLabel roomInfolb,roomInwonlb,waitInfolb;
+   
    JPanel p;
    ChatClient cc;
+   
    //소켓 입출력객체
    BufferedReader in;
    OutputStream out;
+   
    String selectedRoom;
-   String nickName;
-
-   public MainChat() {	 
-
-	 setTitle("Player Unknown's Battle Chatting");
-
-	 cc = new ChatClient();
-	 roomInfo = new JList<String>();
-	   roomInfo.setBorder(new TitledBorder("방 목록"));
-
-	 roomInfo.addMouseListener(new MouseAdapter() {
-	     @Override
-	    public void mouseClicked(MouseEvent e) {
-	    	 String str = roomInfo.getSelectedValue(); //"자바방--1"
-	    	 if(str==null)return;
-			 System.out.println("STR="+str);
-			 selectedRoom = str.substring(0, str.indexOf("("));
-			         //"자바방"  <----  substring(0,3)
-
-			 //대화방 내의 인원정보
-			 sendMsg("170|"+selectedRoom);
-	    }	 
-
-	 });
-
-	 roomInwon = new JList<String>();
-	   roomInwon.setBorder(new TitledBorder("인원 정보"));
-	 waitInfo = new JList<String>();
-       waitInfo.setBorder(new TitledBorder("대기실 인원"));
-
+   
+   public MainChat() {    
+    setTitle("SnowTalk");//7
+    
+    cc = new ChatClient();
+    roomInfo = new JList<String>();
+//      roomInfo.setBorder(new TitledBorder("방정보"));
+    
+    roomInfo.addMouseListener(new MouseAdapter() {
+        @Override
+       public void mouseClicked(MouseEvent e) {
+           
+           String str = roomInfo.getSelectedValue(); //"자바방--1"
+           if(str==null)return;
+          System.out.println("STR="+str);
+//          selectedRoom = str.substring(0, str.indexOf("-"));
+          selectedRoom = str.substring(0, str.indexOf(" ("));
+                  //"자바방"  <----  substring(0,3)
+          //대화방 내의 인원정보
+          sendMsg("170|"+selectedRoom);
+          if(e.getClickCount()==2){
+             sendMsg("200|"+ selectedRoom);
+             sendMsg("175|");//대화방내 인원정보 요청
+             setVisible(false);
+             cc.setVisible(true);
+          }
+       }    
+    });
+    
+    ImageIcon bt_createimg = new ImageIcon("roomCreate.png");
+    ImageIcon bt_enterimg = new ImageIcon("roomEnter.png");
+    ImageIcon bt_exitimg = new ImageIcon("exit.png");
+    ImageIcon roomInfoimg = new ImageIcon("roomInfo.png");
+    ImageIcon roomInwonimg = new ImageIcon("roomInwon.png");
+    ImageIcon waitInfoimg = new ImageIcon("waitInfo.png");
+    roomInfolb = new JLabel(roomInfoimg);
+    roomInwonlb = new JLabel(roomInwonimg);
+    waitInfolb = new JLabel(waitInfoimg);
+      
+    roomInwon = new JList<String>();
+//      roomInwon.setBorder(new TitledBorder("인원정보"));
+    waitInfo = new JList<String>();
+//       waitInfo.setBorder(new TitledBorder("대기실정보"));
+       
      sp_roomInfo = new JScrollPane(roomInfo);
      sp_roomInwon = new JScrollPane(roomInwon);
      sp_waitInfo = new JScrollPane(waitInfo);
-
-     bt_create = new JButton("방 만들기");
-     bt_create.setForeground(Color.WHITE);
-     bt_create.setBackground(new Color(114,137,217));
-     bt_enter = new JButton("방 들어가기");
-     bt_enter.setForeground(Color.WHITE);
-     bt_enter.setBackground(new Color(114,137,217));
-     bt_exit = new JButton("종료");     
-     bt_exit.setForeground(Color.WHITE);
-     bt_exit.setBackground(new Color(114,137,217));
-
+     
+     bt_create = new JButton(bt_createimg);
+//     bt_create.setForeground(Color.WHITE);//8
+//     bt_create.setBackground(new Color(114,137,217));//9
+     bt_enter = new JButton(bt_enterimg);
+//     bt_enter.setForeground(Color.WHITE);//10
+//     bt_enter.setBackground(new Color(114,137,217));//11
+     bt_exit = new JButton(bt_exitimg);     
+//     bt_exit.setForeground(Color.WHITE);//12
+//     bt_exit.setBackground(new Color(114,137,217));//13
+     
      p = new JPanel();
-
-     sp_roomInfo.setBounds(10, 35, 300, 300);
-     sp_roomInwon.setBounds(320, 35, 150, 300);
-     sp_waitInfo.setBounds(10, 370, 300, 130);
-
-     bt_create.setBounds(320,380,150,30);
-     bt_enter.setBounds(320,420,150,30);
-     bt_exit.setBounds(320,460,150,30);
-
+     
+     sp_roomInfo.setBounds(10, 32, 300, 300);
+     sp_roomInwon.setBounds(327, 32, 150, 300);
+     sp_waitInfo.setBounds(10, 375, 300, 130);
+     
+     bt_create.setBounds(325,387,150,30);
+     bt_enter.setBounds(325,427,150,30);
+     bt_exit.setBounds(325,467,150,30);
+     
+     roomInfolb.setBounds(17, 8, 50, 20);
+     roomInwonlb.setBounds(334, 8, 65, 20);
+     waitInfolb.setBounds(17, 351, 75, 20);
+     
      p.setLayout(null);
-     p.setBackground(new Color(54,56,63));
+     p.setBackground(new Color(54,56,63));//14
      p.add(sp_roomInfo);
      p.add(sp_roomInwon);
      p.add(sp_waitInfo);
      p.add(bt_create);
      p.add(bt_enter);
      p.add(bt_exit);
-
+     p.add(roomInfolb);
+     p.add(roomInwonlb);
+     p.add(waitInfolb);
+     
      Toolkit kit = Toolkit.getDefaultToolkit();
      Image icon = kit.getImage("icon.png");
      setIconImage(icon);
+     
      add(p);
-     setVisible(true);
-     setResizable(false);
      setBounds(300,200, 500, 550);
-     setDefaultCloseOperation(EXIT_ON_CLOSE); 
-
+     setResizable(false);
+     setVisible(true);
+     setDefaultCloseOperation(EXIT_ON_CLOSE);
+     
      connect();//서버연결시도 (in,out객체생성)
      new Thread(this).start();//서버메시지 대기
      sendMsg("100|");//(대기실)접속 알림
-     
-     while(true){
-    	 nickName = JOptionPane.showInputDialog(this,"닉네임:");
-    	 if(nickName==null){
-    		 continue;
-    	 }
-    	 break;
-     }
-
-     sendMsg("150|"+nickName);//닉네임 전달
-     
-     eventUp();
-
+    	String nickName = startScreen.getnickName();
+           sendMsg("150|"+nickName);//대화명 전달
+           eventUp();
    }//생성자
-
+   
    private void eventUp(){//이벤트소스-이벤트처리부 연결
-	 //대기실(MainChat)
-	   bt_create.addActionListener(this);
-	   bt_enter.addActionListener(this);
-	   bt_exit.addActionListener(this);
-
-	 //대화방(ChatClient)
-	   cc.sendTF.addActionListener(this);
-	   cc.bt_change.addActionListener(this);
-	   cc.bt_exit.addActionListener(this);
+    //대기실(MainChat)
+      roomInfo.addKeyListener(this);
+      bt_create.addActionListener(this);
+      bt_enter.addActionListener(this);
+      bt_exit.addActionListener(this);
+      
+    //대화방(ChatClient)
+      cc.sendTF.addActionListener(this);
+      cc.bt_change.addActionListener(this);
+      cc.bt_exit.addActionListener(this);
    }
-
+   
    @Override
-
    public void actionPerformed(ActionEvent e) {
-
-	  Object ob = e.getSource();
-
-	  if(ob==bt_create){//방만들기 요청
-		 String title = JOptionPane.showInputDialog(this,"방제목:");
-		 //방제목을 서버에게 전달
-		 sendMsg("160|"+title);
-		 cc.setTitle("Player Unknown's Battle Chatting - 채팅방 ["+title+"]");
-		 sendMsg("175|");//대화방내 인원정보 요청	 
-		 setVisible(false);
-		 cc.setVisible(true); //대화방이동
-
-	  }else if(ob==bt_enter){//방들어가기 요청
-		 if(selectedRoom == null){
-			JOptionPane.showMessageDialog(this, "방을 선택해주세요 :)");
-			return;
-		 }
-		 sendMsg("200|"+ selectedRoom);
-
-		 sendMsg("175|");//대화방내 인원정보 요청
-
-		 setVisible(false);
-
-		 cc.setVisible(true);
-
-	  }else if(ob==cc.bt_exit){//대화방 나가기 요청
-
-		 sendMsg("400|");
-		 cc.setVisible(false);
-		 setVisible(true); 
-
-	  }else if(ob==cc.sendTF){//(TextField입력)메시지 보내기 요청
-
-		 String msg = cc.sendTF.getText();
-		 if(msg.length()>0){
-		   sendMsg("300|"+msg); 
-		   cc.sendTF.setText("");
-		 }
-	  }	  
-
-	  else if(ob==bt_exit){//나가기(프로그램종료) 요청
-		  System.exit(0);//현재 응용프로그램 종료하기
-	  }	  
-
+     Object ob = e.getSource();
+     if(ob==bt_create){//방만들기 요청
+       while(true){
+    	   try{
+    		   String title = JOptionPane.showInputDialog(this,"방제목:");
+    		   
+    		   if(title.length()>0){
+    			   //방제목을 서버에게 전달
+    			   sendMsg("160|"+title);
+    			   
+    			   cc.setTitle("SnowTalk - 채팅방 ["+title+"]");
+    			   
+    			   sendMsg("175|");//대화방내 인원정보 요청    
+    			   
+    			   setVisible(false);
+    			   cc.setVisible(true); //대화방이동
+    			   
+    			   break;
+    		   }  else {
+    			   
+    		   }
+    	   } catch(java.lang.NullPointerException E){
+    		   System.out.println("방 만들기가 취소되었습니다");
+    		   break;
+    	   }
+    
+       }
+       
+     }else if(ob==bt_enter){//방들어가기 요청
+       
+       if(selectedRoom == null){
+         JOptionPane.showMessageDialog(this, "방을 선택!!");
+         return;
+       }
+       
+       sendMsg("200|"+ selectedRoom);
+        
+       sendMsg("175|");//대화방내 인원정보 요청
+       
+       setVisible(false);
+       cc.setVisible(true);
+     }else if(ob==cc.bt_exit){//대화방 나가기 요청
+        
+       sendMsg("400|");
+       
+       cc.setVisible(false);
+       setVisible(true); 
+       
+     }else if(ob==cc.sendTF){//(TextField입력)메시지 보내기 요청
+       String msg = cc.sendTF.getText();
+       if(msg.length()>0){
+         sendMsg("300|"+msg); 
+         cc.sendTF.setText("");
+         
+       }
+       
+     }else if(ob==cc.bt_change){
+        String Changenick=JOptionPane.showInputDialog(this,"변경할 닉네임: ");
+        sendMsg("500|"+Changenick);
+        
+     }
+     else if(ob==bt_exit){//나가기(프로그램종료) 요청
+        System.exit(0);//현재 응용프로그램 종료하기
+     }     
+     
    }//actionPerformed 
-
+   
    public void connect(){//(소켓)서버연결 요청
-
-	try {
-		//Socket s = new Socket(String host<서버ip>, int port<서비스번호>); 
-		  Socket s = new Socket("192.168.1.71", 5000);//연결시도		  
-		  in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		  //in: 서버메시지 읽기객체    서버-----msg------>클라이언트
-		  out = s.getOutputStream();
-		  //out: 메시지 보내기, 쓰기객체    클라이언트-----msg----->서버
-
-	  } catch (UnknownHostException e) {
-		e.printStackTrace();
-	  } catch (IOException e) {
-		e.printStackTrace();
-	  }  
+   try {
+      //Socket s = new Socket(String host<서버ip>, int port<서비스번호>); 
+        Socket s = new Socket("192.168.1.71", 5000);//연결시도        
+        in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        //in: 서버메시지 읽기객체    서버-----msg------>클라이언트
+        out = s.getOutputStream();
+        //out: 메시지 보내기, 쓰기객체    클라이언트-----msg----->서버
+     } catch (UnknownHostException e) {
+      e.printStackTrace();
+     } catch (IOException e) {
+      e.printStackTrace();
+     }  
    }//connect
-
+   
    public void sendMsg(String msg){//서버에게 메시지 보내기
-
-	 try {
-		out.write(  (msg+"\n").getBytes()  );
-	 }catch (IOException e) {
-		e.printStackTrace();
-	}
-   }//sendMsg
-
-   public void run(){//서버가 보낸 메시지 읽기
-	   //왜 run메소드 사용? GUI프로그램실행에 영향 미치지않는 코드 작성.
-//메소드호출은 순차적인 실행!!  스레드메소드는 동시실행(기다리지 않는 별도 실행)!!
-	 try {
-		while(true){
-
-			   String msg = in.readLine();//msg: 서버가 보낸 메시지
-			   //msg==> "300|안녕하세요"  "160|자바방--1,오라클방--1,JDBC방--1"
-
-			   String msgs[] = msg.split("\\|");
-			   String protocol = msgs[0];
-			   switch(protocol){
-
-			     case "300": 
-			    	   cc.ta.append(msgs[1]+"\n");
-					   cc.ta.setCaretPosition(cc.ta.getText().length());
-			    	       break;
-
-			     case "160"://방만들기 
-			    	       //방정보를 List에 뿌리기
-			    	 if(msgs.length > 1){
-			    		 //개설된 방이 한개 이상이었을때 실행
-			    		 //개설된 방없음 ---->  msg="160|" 였을때 에러 
-			    	   String roomNames[] = msgs[1].split(",");
-			    	                   //"자바방--1,오라클방--1,JDBC방--1"
-			    	     roomInfo.setListData(roomNames);
-			    	 }
-			    	   break;
-
-			     case "170"://(대기실에서) 대화방 인원정보
-			    	   String roomInwons[] = msgs[1].split(",");
-			    	   roomInwon.setListData(roomInwons);
-			    	   break;
-
-			     case "175"://(대화방에서) 대화방 인원정보
-			    	   String myRoomInwons[] = msgs[1].split(",");
-			    	   cc.li_inwon.setListData(myRoomInwons);
-			    	   break;
-
-			     case "180"://대기실 인원정보
-			    	 String waitNames[] = msgs[1].split(",");
-			    	 waitInfo.setListData(waitNames);
-			    	 break;
-
-			     case "200"://대화방 입장
-			    	   cc.ta.append("["+msgs[1]+"] 님이 입장하셨습니다 (^.^)\n");
-					   cc.ta.setCaretPosition(cc.ta.getText().length());
-			    	   break;
-
-			     case "400"://대화방 퇴장
-			    	 cc.ta.append("["+msgs[1]+"]님이 퇴장하셨습니다 -_-zzZ\n");
-			    	 cc.ta.setCaretPosition(cc.ta.getText().length());
-			    	 break;
-
-			     case "202"://개설된 방의 타이틀 제목 얻기
-			    	 cc.setTitle("채팅방-["+msgs[1]+"]");
-			    	 break;
-
-			   }//클라이언트 switch
-		   }
-
-	  }catch (IOException e) {
-		e.printStackTrace();
-	 }
-
-   }//run
-
-   public static void main(String[] args) {
-	  new MainChat();
+    try {
+      out.write(  (msg+"\n").getBytes()  );
+    }catch (IOException e) {
+      e.printStackTrace();
    }
-
+   }//sendMsg
+   
+   public void run(){//서버가 보낸 메시지 읽기
+      //왜 run메소드 사용? GUI프로그램실행에 영향 미치지않는 코드 작성.
+//메소드호출은 순차적인 실행!!  스레드메소드는 동시실행(기다리지 않는 별도 실행)!!
+    try {
+      while(true){
+            String msg = in.readLine();//msg: 서버가 보낸 메시지
+            //msg==> "300|안녕하세요"  "160|자바방--1,오라클방--1,JDBC방--1"
+            String msgs[] = msg.split("\\|");
+            String protocol = msgs[0];
+            switch(protocol){
+              case "300": 
+                   cc.ta.append(msgs[1]+"\n");
+                  cc.ta.setCaretPosition(cc.ta.getText().length());
+                       break;
+                       
+              case "160"://방만들기 
+                       //방정보를 List에 뿌리기
+                 if(msgs.length > 1){
+                    //개설된 방이 한개 이상이었을때 실행
+                    //개설된 방없음 ---->  msg="160|" 였을때 에러 
+                   String roomNames[] = msgs[1].split(",");
+                                   //"자바방--1,오라클방--1,JDBC방--1"
+                     roomInfo.setListData(roomNames);
+                 }
+                   break;
+              
+              case "170"://(대기실에서) 대화방 인원정보
+                   String roomInwons[] = msgs[1].split(",");
+                   roomInwon.setListData(roomInwons);
+                   break;
+                   
+              case "175"://(대화방에서) 대화방 인원정보
+                   String myRoomInwons[] = msgs[1].split(",");
+                   cc.li_inwon.setListData(myRoomInwons);
+                   break;
+                   
+              case "180"://대기실 인원정보
+                 String waitNames[] = msgs[1].split(",");
+                 waitInfo.setListData(waitNames);
+                 break;
+                   
+              case "200"://대화방 입장
+                   cc.ta.append("["+msgs[1]+"]님이 입장하셨습니다. \n");
+                  cc.ta.setCaretPosition(cc.ta.getText().length());
+                   break;
+                   
+              case "400"://대화방 퇴장
+                 cc.ta.append("["+msgs[1]+"]님이 퇴장하셨습니다. \n");
+                 cc.ta.setCaretPosition(cc.ta.getText().length());
+                 break;
+                   
+              case "202"://개설된 방의 타이틀 제목 얻기
+                 cc.setTitle("채팅방-["+msgs[1]+"]");
+                 break;
+              
+            }//클라이언트 switch
+            
+         }
+     }catch (IOException e) {
+      e.printStackTrace();
+    }
+   }//run
+   
+   public static void main(String[] args) {
+     new startScreen();
+   }
+   
+	public void keyPressed(KeyEvent e) {
+	   if(e.getKeyCode()==10){
+	      sendMsg("200|"+ selectedRoom);
+	       sendMsg("175|");//대화방내 인원정보 요청
+	       setVisible(true);
+	       cc.setVisible(true);
+	   }
+	}
+	public void keyTyped(KeyEvent e) {}
+	
+	public void keyReleased(KeyEvent e) {}
 }
 
-//class startScreen extends JFrame implements ActionListener{
-//	JTextField idInput = new JTextField();
-//	JLabel idLabel = new JLabel();
-//	JLabel bgImage = new JLabel();
-//	JButton logIn = new JButton("접속");
-//	JButton exit = new JButton("종료");
-//	MainChat mc;
-//	
-//	public startScreen() {
-//		add(idInput);
-//		add(idLabel);
-//		add(bgImage);
-//		add(logIn);
-//		add(exit);
-//		
-//		idInput.setBounds(183, 251, 116, 21);
-//		
-//		
-//		Toolkit kit = Toolkit.getDefaultToolkit();
-//		Dimension dim = kit.getScreenSize();
-//		setBackground(new Color(54,56,63));
-//		setLocation((int)(dim.getWidth()-getWidth())/2,(int)(dim.getHeight()-getHeight())/2);
-//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		setSize(370,420);
-//		setLayout(null);
-//		setVisible(true);
-//	}
-//
-//	@Override
-//	public void actionPerformed(ActionEvent e) {
-//		mc.nickName = idInput.getText();
-//	}
-//}
+class startScreen extends JFrame implements ActionListener{
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+	static JTextField idInput;
+	JLabel idlb,bgimglb,welcome;
+	JButton login,quit;
+	
+	
+	
+	public startScreen() {
+		
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		idInput = new JTextField(20);
+		idInput.addActionListener(this);
+		idInput.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			@Override
+			public void mousePressed(MouseEvent e) {}
+			@Override
+			public void mouseExited(MouseEvent e) {}
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				idInput.setForeground(Color.BLACK);
+				idInput.setText("");
+			}
+		});
+		idInput.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				idInput.setForeground(Color.BLACK);
+				idInput.setText("");
+				idInput.removeKeyListener(this);
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {}
+		});
+		idInput.setHorizontalAlignment(SwingConstants.CENTER);
+		idInput.setFont(new Font("굴림",1,12));
+		idInput.setForeground(Color.GRAY);
+		idInput.setText("닉네임");
+		ImageIcon bgimg = new ImageIcon("olaf.png");
+		ImageIcon idlbimg = new ImageIcon("idlbimg.png");
+		ImageIcon loginimg = new ImageIcon("login.png");
+		ImageIcon quitimg = new ImageIcon("exit2.png");
+		
+		
+		
+		idlb = new JLabel(idlbimg);
+		bgimglb = new JLabel(bgimg);
+		login = new JButton(loginimg);
+		login.addActionListener(this);
+		quit = new JButton(quitimg);
+		quit.addActionListener(this);
+		JPanel p = new JPanel();
+		
+		bgimglb.setBounds(20, 18, 410, 220);
+		idlb.setBounds(155, 360, 140, 40);
+		idInput.setBounds(113, 268, 190, 28);
+		login.setBounds(310, 268, 30, 28);
+		quit.setBounds(174, 317, 98, 37);
+		
+		p.setLayout(null);
+		p.setBackground(new Color(54,56,63));
+		p.add(idInput);
+		p.add(idlb);
+		p.add(bgimglb);
+		p.add(login);
+		p.add(quit);
+		
+	     Image icon = kit.getImage("icon.png");
+	     setIconImage(icon);
+		
+		add(p);
+		Dimension dim = kit.getScreenSize();
+		setTitle("SnowTalk");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(false);
+		setSize(450,428);
+		setLocation((int)(dim.getWidth()-getWidth())/2,(int)(dim.getHeight()-getHeight())/2);
+		setVisible(true);
+		
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object ob = e.getSource();
+		if(ob==login||ob==idInput){
+			if(idInput.getText().length()>0){
+				this.dispose();
+				new MainChat();
+			} else {
+				JOptionPane.showMessageDialog(null, "닉네임을 입력해주세요","Message", 1);
+				this.dispose();
+				new startScreen();
+			}
+		}
+		else if(ob==quit){
+			System.exit(0);
+		}
+		
+	}
+	
+	static public String getnickName() {
+		return idInput.getText();
+	}
+	
+}
